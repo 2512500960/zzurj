@@ -26,6 +26,7 @@
 #pragma comment(lib,"wsock32.lib")
 #pragma comment(lib,"wpcap.lib")
 #pragma comment(lib,"iphlpapi.lib")
+#pragma comment(lib,"v3hash_.lib")
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
 

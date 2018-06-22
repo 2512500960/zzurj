@@ -10,6 +10,7 @@
 #include "HyperLink.h"
 #include "zzudata.h"
 #include "GetHDSerial.h"
+#include "checkV4.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -1506,6 +1507,7 @@ int CMentoHUSTDlg::InitStartPacket(byte* startpacket)
 	//if modification is needy, do here
 	memcpy_s(temp+0x06,6, m_bLocalMAC,6);
 	memcpy_s(temp + 0x6c, 6, m_bLocalMAC, 6);
+	memcpy_s(temp + 0x7c, 6, m_bLocalMAC, 6);
 	UINT8 *dhcpinfo = getdhcpinfo();
 	memcpy(temp + 0x12, dhcpinfo, 23);
 	CGetHDSerial hdserial;
@@ -1528,6 +1530,7 @@ int CMentoHUSTDlg::InitIdentifyPacket(byte* identifypacket)
 	//if modification is needy, do here
 	memcpy_s(temp + 0x06, 6, m_bLocalMAC, 6);
 	memcpy_s(temp + 0x6c, 6, m_bLocalMAC, 6);
+	memcpy_s(temp + 0x7c, 6, m_bLocalMAC, 6);
 	memcpy_s(temp, 6, m_bDestMAC, 6);
 	UINT8 *dhcpinfo = getdhcpinfo();
 	memcpy(temp + 0x22, dhcpinfo, 23);
@@ -1564,16 +1567,13 @@ u_char *checkPass(u_char id, const u_char *md5Seed, int seedLen, char* password)
 	return ComputeHash(md5Src, md5Len);
 }
 
-extern "C"
-{
-	char * _cdecl _ZN10CVz_APIApp11PrepareDataEPciS0_PKc(char*, char*, unsigned int, unsigned char*);
-}
 int CMentoHUSTDlg::InitMD5ChallengePacket(byte * packet)
 {
 	byte temp[573] = { 0 };
 	memcpy(temp,md5challenge_packet,573);
 	memcpy_s(temp + 0x06, 6, m_bLocalMAC, 6);
 	memcpy_s(temp + 0x7c, 6, m_bLocalMAC, 6);
+	memcpy_s(temp + 0x8d, 6, m_bLocalMAC, 6);
 	memcpy_s(temp, 6, m_bDestMAC, 6);
 	UINT8 *dhcpinfo=getdhcpinfo();
 	memcpy(temp+0x33,dhcpinfo,23);
@@ -1592,17 +1592,26 @@ int CMentoHUSTDlg::InitMD5ChallengePacket(byte * packet)
 		char *pass = new char[len2 + 1];
 		WideCharToMultiByte(CP_ACP, 0, m_sPassword, m, pass, len2, NULL, NULL);
 		pass[len2] = '\0';
-
+	
 
 	unsigned char* checkpass = checkPass(2,m_bMD5SeedV3,16,pass);
 	memcpy(temp+0x18,checkpass,0x10);
 	
 	char *md52 = computePwd(m_bMD5SeedV3,uname,pass);
 	memcpy(temp + 0x9b, md52, 16);
-	unsigned int type = (m_bMD5SeedV3[0] + m_bMD5SeedV3[3]) % 5;
-	char *unknown = (char*)malloc(4096);
-	char  v3hash[256] = { 0 };
-	_ZN10CVz_APIApp11PrepareDataEPciS0_PKc(unknown,v3hash,type,(unsigned char*)m_bMD5SeedV3);
+	//unsigned int type = (m_bMD5SeedV3[0] + m_bMD5SeedV3[3]) % 5;
+	//char *unknown = (char*)malloc(4096);
+	//char  v3hash[256] = { 0 };
+	//_ZN10CVz_APIApp11PrepareDataEPciS0_PKc(unknown,v3hash,type,(unsigned char*)m_bMD5SeedV3);
+	/*HINSTANCE v3hashdll = LoadLibraryA("v3hash_.dll");
+	if (v3hashdll == NULL)
+		FreeLibrary(v3hashdll);
+		typedef unsigned char *(*computeV4hash)(unsigned char *, unsigned int);
+		computeV4hash computev4;
+		computev4 = (computeV4hash)GetProcAddress(v3hashdll,"computev4");
+		if (computev4 == NULL)
+			FreeLibrary(v3hashdll);*/
+	unsigned char * v3hash = computeV4(m_bMD5SeedV3,16);
 	memcpy(temp+0x10c,v3hash,128);
 	CGetHDSerial hdserial;
 	char * hdserialchar= hdserial.GetHDSerial();

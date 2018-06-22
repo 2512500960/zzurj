@@ -95,6 +95,9 @@
     <ClInclude Include="Source\GetHDSerial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\checkV4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Certting.ico">
@@ -124,8 +127,10 @@
     <CustomBuild Include="res\MentoHUST.rc2">
       <Filter>Resource Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="hash.asm">
-      <Filter>Source Files</Filter>
-    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="Source\Lib\v3hash_.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
   </ItemGroup>
 </Project>
