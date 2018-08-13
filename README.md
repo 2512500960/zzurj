@@ -1,4 +1,4 @@
-# zzurj
-hash.asm是通过ida7.0从RG-SUforLinux X86 v1.30中弄出来的汇编函数，算出来的v3hash会错，也会对，没时间看问题在哪了。没时间弄了。
-hash.asm不再用了。
-加了个dll
+# zzumentohust
+适用于郑州大学的windows平台的锐捷认证客户端。
+改的，windows下可用，目前学号得是11位的，不然出错，懒得改了。
+有啥问题发邮件，
