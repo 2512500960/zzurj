@@ -94,21 +94,21 @@ EXSTYLE WS_EX_APPWINDOW
 CAPTION "MentoHUST 2009"
 FONT 9, "宋体", 0, 0, 0x1
 BEGIN
-    CONTROL         IDB_LOGO,IDC_SC_LOGO,"Static",SS_BITMAP | SS_CENTERIMAGE,5,2,200,35
-    GROUPBOX        "认证选项",IDC_STATIC,5,38,200,80
+    GROUPBOX        "认证选项",IDC_STATIC,5,38,199,80
     DEFPUSHBUTTON   "认证",IDOK,14,98,35,15
     PUSHBUTTON      "输出↑",IDC_BN_OUTPUT,63,98,35,15
     PUSHBUTTON      "设置",IDC_BN_OPTION,112,98,35,15
     PUSHBUTTON      "退出",IDCANCEL,161,98,35,15
-    PUSHBUTTON      "关于",IDC_BN_ABOUT,35,212,35,15
-    PUSHBUTTON      "帮助",IDC_BN_HELP,88,212,35,15
-    PUSHBUTTON      "清空",IDC_BN_CLEAR,140,212,35,15
+    PUSHBUTTON      "关于",IDC_BN_ABOUT,35,211,35,15
+    PUSHBUTTON      "帮助",IDC_BN_HELP,88,211,35,15
+    PUSHBUTTON      "清空",IDC_BN_CLEAR,140,211,35,15
     LTEXT           "账号:",IDC_STATIC,14,51,29,8,SS_CENTERIMAGE
     COMBOBOX        IDC_CB_ACCOUNT,43,49,153,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "网卡:",IDC_STATIC,14,67,29,8,SS_CENTERIMAGE
     COMBOBOX        IDC_CB_ADAPTER,43,65,153,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "",IDC_SC_STATE,14,82,183,13,SS_CENTERIMAGE | WS_BORDER
     EDITTEXT        IDC_ED_OUTPUT,8,126,194,84,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | NOT WS_TABSTOP
+    CONTROL         IDB_LOGO,IDC_SC_LOGO,"Static",SS_BITMAP | SS_CENTERIMAGE,5,2,199,35
 END
 
 IDD_CONFIGBOX DIALOG 0, 0, 210, 125
@@ -121,16 +121,16 @@ BEGIN
     PUSHBUTTON      "取消",IDCANCEL,125,107,35,15
 END
 
-IDD_CFG_ACCOUNT DIALOG 0, 0, 196, 88
+IDD_CFG_ACCOUNT DIALOGEX 0, 0, 217, 101
 STYLE DS_SETFONT | WS_CHILD
-FONT 9, "宋体"
+FONT 9, "宋体", 0, 0, 0x0
 BEGIN
-    EDITTEXT        IDC_ED_USERNAME,4,70,44,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_ED_PASSWORD,50,70,44,12,ES_AUTOHSCROLL
-    CONTROL         "IPAddress1",IDC_IPADDRESS,"SysIPAddress32",WS_TABSTOP,96,70,66,12
-    PUSHBUTTON      "+",IDC_BN_ADD,165,70,12,12
-    PUSHBUTTON      "-",IDC_BN_DEL,180,70,12,12
-    CONTROL         "List1",IDC_LS_ACCOUNT,"SysListView32",LVS_REPORT | WS_BORDER | WS_TABSTOP,4,4,188,64
+    EDITTEXT        IDC_ED_USERNAME,4,70,35,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ED_PASSWORD,41,70,39,12,ES_AUTOHSCROLL
+    CONTROL         "IPAddress1",IDC_IPADDRESS,"SysIPAddress32",WS_TABSTOP,82,70,81,12
+    PUSHBUTTON      "+",IDC_BN_ADD,167,70,12,12
+    PUSHBUTTON      "-",IDC_BN_DEL,182,70,12,12
+    CONTROL         "List1",IDC_LS_ACCOUNT,"SysListView32",LVS_REPORT | WS_BORDER | WS_TABSTOP,4,4,201,64
 END
 
 IDD_CFG_SYSTEM DIALOG 0, 0, 196, 88
@@ -177,11 +177,11 @@ BEGIN
     BEGIN
         BLOCK "080404b0"
         BEGIN
-            VALUE "CompanyName", "华梦工作室"
-            VALUE "FileDescription", "理想的校园网认证程序"
-            VALUE "FileVersion", "2009特别版"
-            VALUE "LegalCopyright", "版权所有 (C) MentoHUST"
-            VALUE "LegalTrademarks", "菜鸟哪来这个啊！"
+            VALUE "CompanyName", "?"
+            VALUE "FileDescription", "校园网认证程序"
+            VALUE "FileVersion", "0.1"
+            VALUE "LegalCopyright", "?"
+            VALUE "LegalTrademarks", "？"
             VALUE "OriginalFilename", "MentoHUST.exe"
             VALUE "ProductName", "MentoHUST"
             VALUE "ProductVersion", "2.3.1.0"
@@ -213,9 +213,9 @@ BEGIN
     IDD_MENTOHUST_DIALOG, DIALOG
     BEGIN
         LEFTMARGIN, 5
-        RIGHTMARGIN, 205
+        RIGHTMARGIN, 204
         TOPMARGIN, 2
-        BOTTOMMARGIN, 227
+        BOTTOMMARGIN, 226
     END
 
     IDD_CONFIGBOX, DIALOG
@@ -228,6 +228,8 @@ BEGIN
 
     IDD_CFG_ACCOUNT, DIALOG
     BEGIN
+        RIGHTMARGIN, 210
+        BOTTOMMARGIN, 91
     END
 
     IDD_CFG_SYSTEM, DIALOG
@@ -301,13 +303,29 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_CFG_ACCOUNT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_MENTOHUST_DIALOG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
 STRINGTABLE
 BEGIN
     IDS_ABOUTBOX            "关于 MentoHUST(&A)..."
-    IDS_WELBOARD            "华梦工作室 - MentoHUST"
+    IDS_WELBOARD            " MentoHUST"
     IDS_WELCOME             ":: 欢迎使用MentoHUST!"
     IDS_RUIJIE_VERSION      ">> 客户端版本: %d.%d.%d.%d"
     IDS_EXITMSG             "确定退出？"
@@ -342,7 +360,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_CANCEL              "取消"
-    IDS_WNDCAPTION          "MentoHUST 2009"
+    IDS_WNDCAPTION          "MentoHUST"
     IDS_RUIJIE_ERG          "SOFTWARE\\锐捷网络\\Ruijie Supplicant"
     IDS_LINKURL             "http://www.zzu.edu.cn/"
     IDS_LINKTIP             "欢迎访问更新主页"

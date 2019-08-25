@@ -173,6 +173,9 @@ private:
 	BYTE	m_bLocalDNS[4];		//本地DNS
 	BOOL	m_bTimerSign;		//定时器是否开启
 	BOOL	m_bChanged;			//参数是否改变
+public:
+//	afx_msg void OnStnClickedScLogo();
+	afx_msg void OnStnClickedScLogo();
 };
 # define uint64_t unsigned __int64
 # define uint32_t unsigned __int32

@@ -132,6 +132,8 @@ BEGIN_MESSAGE_MAP(CMentoHUSTDlg, CDialog)
 	ON_WM_DESTROY()
 	ON_WM_TIMER()
 	//}}AFX_MSG_MAP
+//	ON_STN_CLICKED(IDC_SC_LOGO, &CMentoHUSTDlg::OnStnClickedScLogo)
+ON_STN_CLICKED(IDC_SC_LOGO, &CMentoHUSTDlg::OnStnClickedScLogo)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1524,35 +1526,43 @@ int CMentoHUSTDlg::sendstart()
 }
 int CMentoHUSTDlg::InitIdentifyPacket(byte* identifypacket)
 {
-	byte  temp[540];
-	memset(temp, 0, 540);
-	memcpy_s(temp, 540, identify_packet, 540);//学号必须是11位的。不然得改
-	//if modification is needy, do here
-	memcpy_s(temp + 0x06, 6, m_bLocalMAC, 6);
-	memcpy_s(temp + 0x6c, 6, m_bLocalMAC, 6);
-	memcpy_s(temp + 0x7c, 6, m_bLocalMAC, 6);
-	memcpy_s(temp, 6, m_bDestMAC, 6);
-	UINT8 *dhcpinfo = getdhcpinfo();
-	memcpy(temp + 0x22, dhcpinfo, 23);
-	//char* uname = (char*)m_sUsername.GetBuffer();
-
 	int n = m_sUsername.GetLength();
 	int len1 = WideCharToMultiByte(CP_ACP, 0, m_sUsername, n, NULL, 0, NULL, NULL);
 	char *uname = new char[len1 + 1];
 	WideCharToMultiByte(CP_ACP, 0, m_sUsername, n, uname, len1, NULL, NULL);
 	uname[len1] = '\0';
+	int xuehaochangdu = len1 - 1;
+	//identify_packet是学号11位的时候抓的包，所以如果学号长度要是多于11位的话，需要往后移动一下
+	int size = 540 + xuehaochangdu - 11;
+	byte* temp = (byte*)malloc(size);
+
+	memset(temp, 0, size);
+	memcpy_s(temp, 23, identify_packet, 23);
+	memcpy_s(temp + 23 + xuehaochangdu, size - 23 - xuehaochangdu, identify_packet, 540 - 23 - 11);
+
+	memcpy(temp + 23, uname, xuehaochangdu);
+
+	memcpy_s(temp + 0x06, 6, m_bLocalMAC, 6);
+	memcpy_s(temp + 0x6c + xuehaochangdu - 11, 6, m_bLocalMAC, 6);
+	memcpy_s(temp + 0x7c + xuehaochangdu - 11, 6, m_bLocalMAC, 6);
+	memcpy_s(temp, 6, m_bDestMAC, 6);
+	UINT8 *dhcpinfo = getdhcpinfo();
+	memcpy(temp + 0x22 + xuehaochangdu - 11, dhcpinfo, 23);
+	//char* uname = (char*)m_sUsername.GetBuffer();
+
+
 	CGetHDSerial hdserial;
 	char * hdserialchar = hdserial.GetHDSerial();
-	memcpy(temp + 0x19b, hdserialchar, strlen(hdserialchar));
-	memcpy(temp+23,uname,11);
-	memcpy_s(identifypacket, 540, temp, 540);
-	return 0;
+	memcpy(temp + 0x19b+xuehaochangdu-11, hdserialchar, strlen(hdserialchar));
+
+	memcpy_s(identifypacket, size, temp, size);
+	return size;
 }
 int CMentoHUSTDlg::sendidentify()
 {
-	byte packet[540];
-	InitIdentifyPacket(packet);
-	return pcap_sendpacket(m_pAdapter, packet, 540);
+	byte packet[1000];
+	int size=InitIdentifyPacket(packet);
+	return pcap_sendpacket(m_pAdapter, packet, size);
 }
 typedef unsigned char u_char;
 u_char *checkPass(u_char id, const u_char *md5Seed, int seedLen, char* password)//id=2
@@ -1729,4 +1739,11 @@ UINT8 * CMentoHUSTDlg::getdhcpinfo()
 	rj_encode((uint8_t*)&_dhcp_info, sizeof(_dhcp_info));
 	memcpy(temp,dhcp_info,23);
 	return temp;
+}
+
+
+
+void CMentoHUSTDlg::OnStnClickedScLogo()
+{
+	// TODO: 在此添加控件通知处理程序代码
 }
