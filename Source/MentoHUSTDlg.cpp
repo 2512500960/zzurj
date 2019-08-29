@@ -94,7 +94,7 @@ CMentoHUSTDlg::CMentoHUSTDlg(CWnd* pParent /*=NULL*/)
 	//}}AFX_DATA_INIT
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	m_sStateBoard.LoadString(IDS_WELBOARD);		//MentoHUST
-	m_sStateArea.LoadString(IDS_WELCOME);		//:: »¶Ó­Ê¹ÓÃMentoHUST!
+	m_sStateArea.LoadString(IDS_WELCOME);		//:: æ¬¢è¿ä½¿ç”¨MentoHUST!
 	m_bFullSize = TRUE;
 	m_bTimerSign = FALSE;
 	m_bChanged = FALSE;
@@ -154,7 +154,7 @@ BOOL CMentoHUSTDlg::OnInitDialog()
 	if (pSysMenu != NULL)
 	{
 		CString strAboutMenu;
-		strAboutMenu.LoadString(IDS_ABOUTBOX);	//¹ØÓÚ MentoHUST(&A)...
+		strAboutMenu.LoadString(IDS_ABOUTBOX);	//å…³äº MentoHUST(&A)...
 		if (!strAboutMenu.IsEmpty())
 		{
 			pSysMenu->AppendMenu(MF_SEPARATOR);
@@ -237,14 +237,14 @@ HCURSOR CMentoHUSTDlg::OnQueryDragIcon()
 
 void CMentoHUSTDlg::MyInitDialog()
 {
-	InitInterface();		//³õÊ¼»¯½çÃæ
-	ReadConfig();			//¶ÁÈ¡ÅäÖÃ
-	InitAccountList();		//³õÊ¼»¯ÕËºÅÁĞ±í
-	if (!InitAdapterList())	//³õÊ¼»¯Íø¿¨ÁĞ±í£¬ÈôÕÒ²»µ½Íø¿¨
+	InitInterface();		//åˆå§‹åŒ–ç•Œé¢
+	ReadConfig();			//è¯»å–é…ç½®
+	InitAccountList();		//åˆå§‹åŒ–è´¦å·åˆ—è¡¨
+	if (!InitAdapterList())	//åˆå§‹åŒ–ç½‘å¡åˆ—è¡¨ï¼Œè‹¥æ‰¾ä¸åˆ°ç½‘å¡
 		MessageBox(LoadString(IDS_FIND_NONIC), LoadString(IDS_NOTIFYMSG), MB_OK|MB_ICONWARNING);
-	else if (m_bAutoCert)		//ÈôÔËĞĞºó×Ô¶¯ÈÏÖ¤
+	else if (m_bAutoCert)		//è‹¥è¿è¡Œåè‡ªåŠ¨è®¤è¯
 		OnOK();
-	InitTrayData();			//³õÊ¼»¯ÍĞÅÌÍ¼±ê
+	InitTrayData();			//åˆå§‹åŒ–æ‰˜ç›˜å›¾æ ‡
 }
 
 int CMentoHUSTDlg::ShowDlg(CDialog *dlg)
@@ -302,7 +302,7 @@ void CMentoHUSTDlg::ReadAccountAgain()
 void CMentoHUSTDlg::OnBnClear() 
 {
 	m_sServerMsg.Empty();
-	m_sStateArea.LoadString(IDS_WELCOME);	//:: »¶Ó­Ê¹ÓÃ MentoHUST!
+	m_sStateArea.LoadString(IDS_WELCOME);	//:: æ¬¢è¿ä½¿ç”¨ MentoHUST!
 	SetDlgItemText(IDC_ED_OUTPUT, m_sStateArea);
 }
 
@@ -310,7 +310,7 @@ void CMentoHUSTDlg::OnBnHelp()
 {
 	CString strFileName = GetAppPath()+_T("Readme.txt");
 	if (ShellExecute(NULL, _T("open"), strFileName, NULL, NULL, SW_SHOWNORMAL) < (HANDLE)32)
-	{	//ÎÂÜ°ÌáÊ¾|ÔÚ³ÌĞòËùÔÚÄ¿Â¼ÕÒ²»µ½°ïÖúÎÄ¼ş Readme.txt£¡
+	{	//æ¸©é¦¨æç¤º|åœ¨ç¨‹åºæ‰€åœ¨ç›®å½•æ‰¾ä¸åˆ°å¸®åŠ©æ–‡ä»¶ Readme.txtï¼
 		MessageBox(LoadString(IDS_HELPERROR), LoadString(IDS_NOTIFYMSG), MB_OK|MB_ICONWARNING);
 	}
 }
@@ -322,12 +322,12 @@ void CMentoHUSTDlg::OnBnOutput()
 	if (m_bFullSize)
 	{
 		dlgRect.bottom = dlgRect.top + m_iSmallHeight;
-		SetDlgItemText(IDC_BN_OUTPUT, LoadString(IDS_OUTPUT_D));	//Êä³ö¡ü->Êä³ö¡ı
+		SetDlgItemText(IDC_BN_OUTPUT, LoadString(IDS_OUTPUT_D));	//è¾“å‡ºâ†‘->è¾“å‡ºâ†“
 	}
 	else
 	{
 		dlgRect.bottom = dlgRect.top + m_iBigHeight;
-		SetDlgItemText(IDC_BN_OUTPUT, LoadString(IDS_OUTPUT_U));	//Êä³ö¡ı->Êä³ö¡ü
+		SetDlgItemText(IDC_BN_OUTPUT, LoadString(IDS_OUTPUT_U));	//è¾“å‡ºâ†“->è¾“å‡ºâ†‘
 	}
 	MoveWindow(&dlgRect);
 	m_bFullSize = !m_bFullSize;
@@ -362,7 +362,7 @@ void CMentoHUSTDlg::InitInterface()
 
 void CMentoHUSTDlg::OnCancel() 
 {
-	//ÍË³öÌáÊ¾|È·¶¨ÍË³ö£¿
+	//é€€å‡ºæç¤º|ç¡®å®šé€€å‡ºï¼Ÿ
 	if (MessageBox(LoadString(IDS_EXITMSG), LoadString(IDS_NOTIFYMSG), MB_OKCANCEL | MB_ICONWARNING ) == IDOK)
 	{
 		CDialog::OnCancel();
@@ -528,7 +528,7 @@ BOOL CMentoHUSTDlg::GetAccount()
 #ifndef UNICODE
 	m_uIP = inet_addr(strIP);
 #else
-	char *szIP = UnicodeToUTF8(strIP);	//¶ÔÓÚASCII×Ö·ûGBºÍUTF8ÄÚ´æÕ¼ÓÃÏàÍ¬£¬ÎªÍ¼·½±ã£¬Ö±½Ó×ª»»ÎªUTF8
+	char *szIP = UnicodeToUTF8(strIP);	//å¯¹äºASCIIå­—ç¬¦GBå’ŒUTF8å†…å­˜å ç”¨ç›¸åŒï¼Œä¸ºå›¾æ–¹ä¾¿ï¼Œç›´æ¥è½¬æ¢ä¸ºUTF8
 	m_uIP = inet_addr(szIP);
 	delete []szIP;
 #endif
@@ -589,7 +589,7 @@ void CMentoHUSTDlg::Output(LPCTSTR Msg, int Type)
 {
 	CEdit *StateEdit = (CEdit *)GetDlgItem(IDC_ED_OUTPUT);
 	if (StateEdit->GetLineCount() > MAX_OUTPUT_LINES)
-		m_sStateArea.Format(LoadString(IDS_MSGCLEAR), MAX_OUTPUT_LINES);	//:: Êä³ö³¬¹ı %d, ×Ô¶¯Çå¿Õ¡£
+		m_sStateArea.Format(LoadString(IDS_MSGCLEAR), MAX_OUTPUT_LINES);	//:: è¾“å‡ºè¶…è¿‡ %d, è‡ªåŠ¨æ¸…ç©ºã€‚
 	switch (Type)
 	{
 	case 1:
@@ -683,7 +683,7 @@ void CMentoHUSTDlg::CheckRuijie()
 	CString strTemp;
 	strTemp.Format(LoadString(IDS_RUIJIE_VERSION), m_bPackage[0x3B], m_bPackage[0x3C], m_bPackage[0x3D], m_bPackage[0x3E]);
 	Output(strTemp, 2);
-	if (ntohl(*(u_int32_t *)(m_bPackage+0x3B)) < 0x02380000)		//2.56.0.0Ö®Ç°
+	if (ntohl(*(u_int32_t *)(m_bPackage+0x3B)) < 0x02380000)		//2.56.0.0ä¹‹å‰
 	{
 		Output(LoadString(IDS_NO_CLIENTCHECK), 2);
 		return;
@@ -980,7 +980,7 @@ void CMentoHUSTDlg::InitDefault(BOOL bStart)
 		*(u_int16_t *)(m_bPackage+0x4a) = *(u_int16_t *)(m_bPackage+0x72) =
 		*(u_int16_t *)(m_bPackage+0x7E) = *(u_int16_t *)(m_bPackage+0x8C) = htons(0x1311);
 	memcpy(m_bPackage+0x1B, "8021x.exe", 9);
-	*(u_int16_t *)(m_bPackage+0x3B) = htons(0x021F);	//°æ±¾Îª2.31.0.0
+	*(u_int16_t *)(m_bPackage+0x3B) = htons(0x021F);	//ç‰ˆæœ¬ä¸º2.31.0.0
 	*(u_int32_t *)(m_bPackage+0x44) = htonl(0x00281A28);
 	*(u_int16_t *)(m_bPackage+0x4C) = htons(0x1722);
 	BYTE Start[0x20] = {
@@ -1134,19 +1134,19 @@ BOOL CMentoHUSTDlg::SendPackage()
 	}
 	switch ( m_iState )
 	{
-	case IDT_FIND_SERVER:			//Ñ°ÕÒ·şÎñÆ÷
+	case IDT_FIND_SERVER:			//å¯»æ‰¾æœåŠ¡å™¨
 		if ( /*SendStartPackage()*/sendstart() )
 			return FALSE;
 		break;
-	case IDT_ACK_NAME:				//ÒÔÓÃ»§ÃûÓ¦´ğ
+	case IDT_ACK_NAME:				//ä»¥ç”¨æˆ·ååº”ç­”
 		if (/* SendIdentityPackage()*/sendidentify() )
 			return FALSE;
 		break;
-	case IDT_ACK_PSWD:				//ÒÔMD5¼ÆËãµÃµ½µÄÖµÓ¦´ğ
+	case IDT_ACK_PSWD:				//ä»¥MD5è®¡ç®—å¾—åˆ°çš„å€¼åº”ç­”
 		if ( /*SendMD5ChallengePackage()*/ sendmd5challenge())
 			return FALSE;
 		break;
-	case IDT_ACK_ECHO:				//ÔËĞĞÊ±echo°ü
+	case IDT_ACK_ECHO:				//è¿è¡Œæ—¶echoåŒ…
 		if ( SendEchoPackage() )
 			return FALSE;
 		if ( m_bBandMac != 0 )
@@ -1265,7 +1265,7 @@ int CMentoHUSTDlg::SendLogoffPackage()
 
 void CMentoHUSTDlg::SendArpPackage()
 {
-	BYTE arpPackage[0x3C] = {	//Arp°ü
+	BYTE arpPackage[0x3C] = {	//ArpåŒ…
 		0xff,0xff,0xff,0xff,0xff,0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x08,0x06,0x00,0x01,
 		0x08,0x00,0x06,0x04,0x00};
 
@@ -1377,8 +1377,8 @@ UINT DhcpThreadFunc( LPVOID pParam )
 UINT CertThreadFunc( LPVOID pParam )
 {
 	CMentoHUSTDlg *mainDlg = (CMentoHUSTDlg *)pParam;
-	BYTE *pRecvBuf;			//Ö¸Ïòbuf1£¬½ÓÊÕµ½µÄÊı¾İ°ü
-	BYTE *pRecvHeaderBuf;	//Ö¸Ïòbuf2£¬½ÓÊÕµ½µÄÊı¾İÍ·
+	BYTE *pRecvBuf;			//æŒ‡å‘buf1ï¼Œæ¥æ”¶åˆ°çš„æ•°æ®åŒ…
+	BYTE *pRecvHeaderBuf;	//æŒ‡å‘buf2ï¼Œæ¥æ”¶åˆ°çš„æ•°æ®å¤´
 	BOOL bFirst = TRUE;
 	USHORT sLen;
 	CString strTemp;
@@ -1394,12 +1394,12 @@ UINT CertThreadFunc( LPVOID pParam )
 		}
 		else if (retVal != 1)
 			continue;
-		if (pRecvBuf[0x0c]==0x88 && pRecvBuf[0x0d]==0x8e)		//ÅĞ¶ÏÊÇ·ñ802.1x
+		if (pRecvBuf[0x0c]==0x88 && pRecvBuf[0x0d]==0x8e)		//åˆ¤æ–­æ˜¯å¦802.1x
 		{
 			switch(pRecvBuf[0x12])
 			{
-			case 0x01:					//Request£¬ÑéÖ¤ÓÃ»§Ãû»òÕßÃÜÂëÊ±ÊÕµ½
-				switch (pRecvBuf[0x16])	//ÅĞ¶ÏEAP Type
+			case 0x01:					//Requestï¼ŒéªŒè¯ç”¨æˆ·åæˆ–è€…å¯†ç æ—¶æ”¶åˆ°
+				switch (pRecvBuf[0x16])	//åˆ¤æ–­EAP Type
 				{
 				case 0x01:				//Request Identity
 					if ( bFirst )
@@ -1443,7 +1443,7 @@ UINT CertThreadFunc( LPVOID pParam )
 				mainDlg->PostMessage( WM_SYSCOMMAND, IDT_ACK_ECHO );
 				break;
 
-			case 0x04:					//ÈÏÖ¤Ê§°Ü
+			case 0x04:					//è®¤è¯å¤±è´¥
 				sLen = ((USHORT)pRecvBuf[0x1a]<<8)|pRecvBuf[0x1b];
 				if (sLen != 0)
 				{
@@ -1461,7 +1461,7 @@ UINT CertThreadFunc( LPVOID pParam )
 				break;
 			}//end switch
 		}//end if
-		else if(pRecvBuf[0x0c] ==0x08 && pRecvBuf[0x0d]==0x06 && mainDlg->m_bBandMac!=0)		//ÅĞ¶ÏÊÇ·ñARP
+		else if(pRecvBuf[0x0c] ==0x08 && pRecvBuf[0x0d]==0x06 && mainDlg->m_bBandMac!=0)		//åˆ¤æ–­æ˜¯å¦ARP
 		{
 			if (memcmp(pRecvBuf+0x1c, mainDlg->m_bGateIP, 4)==0)
 			{
@@ -1531,8 +1531,8 @@ int CMentoHUSTDlg::InitIdentifyPacket(byte* identifypacket)
 	char *uname = new char[len1 + 1];
 	WideCharToMultiByte(CP_ACP, 0, m_sUsername, n, uname, len1, NULL, NULL);
 	uname[len1] = '\0';
-	int xuehaochangdu = len1 - 1;
-	//identify_packetÊÇÑ§ºÅ11Î»µÄÊ±ºò×¥µÄ°ü£¬ËùÒÔÈç¹ûÑ§ºÅ³¤¶ÈÒªÊÇ¶àÓÚ11Î»µÄ»°£¬ĞèÒªÍùºóÒÆ¶¯Ò»ÏÂ
+	int xuehaochangdu = len1;
+	//identify_packetæ˜¯å­¦å·11ä½çš„æ—¶å€™æŠ“çš„åŒ…ï¼Œæ‰€ä»¥å¦‚æœå­¦å·é•¿åº¦è¦æ˜¯å¤šäº11ä½çš„è¯ï¼Œéœ€è¦å¾€åç§»åŠ¨ä¸€ä¸‹
 	int size = 540 + xuehaochangdu - 11;
 	byte* temp = (byte*)malloc(size);
 
@@ -1541,7 +1541,8 @@ int CMentoHUSTDlg::InitIdentifyPacket(byte* identifypacket)
 	memcpy_s(temp + 23 + xuehaochangdu, size - 23 - xuehaochangdu, identify_packet, 540 - 23 - 11);
 
 	memcpy(temp + 23, uname, xuehaochangdu);
-
+	temp[17] = xuehaochangdu - 11 + 16;
+	temp[21] = xuehaochangdu - 11 + 16;
 	memcpy_s(temp + 0x06, 6, m_bLocalMAC, 6);
 	memcpy_s(temp + 0x6c + xuehaochangdu - 11, 6, m_bLocalMAC, 6);
 	memcpy_s(temp + 0x7c + xuehaochangdu - 11, 6, m_bLocalMAC, 6);
@@ -1745,5 +1746,5 @@ UINT8 * CMentoHUSTDlg::getdhcpinfo()
 
 void CMentoHUSTDlg::OnStnClickedScLogo()
 {
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 }
