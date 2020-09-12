@@ -1427,7 +1427,7 @@ UINT CertThreadFunc( LPVOID pParam )
 				if (sLen != 0)
 				{
 					char *serverMsg = new char[sLen-1];
-					memcpy(serverMsg, pRecvBuf+0x1e, sLen-2);
+					memcpy(serverMsg, pRecvBuf+0x1c, sLen-2);
 					serverMsg[sLen-2] = '\0';
 					mainDlg->m_sServerMsg = serverMsg;
 					delete []serverMsg;
@@ -1448,7 +1448,7 @@ UINT CertThreadFunc( LPVOID pParam )
 				if (sLen != 0)
 				{
 					char *serverMsg = new char[sLen-1];
-					memcpy(serverMsg, pRecvBuf+0x1e, sLen-2);
+					memcpy(serverMsg, pRecvBuf+0x1c, sLen-2);
 					serverMsg[sLen-2] = '\0';
 					mainDlg->m_sServerMsg = serverMsg;
 					delete []serverMsg;
