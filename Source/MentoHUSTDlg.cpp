@@ -1410,11 +1410,13 @@ UINT CertThreadFunc( LPVOID pParam )
 						bFirst = FALSE;
 					}
 					memcpy( mainDlg->m_bMD5Source, pRecvBuf+0x10, 0x20 );
+					memcpy(mainDlg->m_requestID, pRecvBuf + 19, 0x1);
 					mainDlg->PostMessage( WM_SYSCOMMAND, IDT_ACK_NAME );
 					break;
 
 				case 0x04:				//Request MD5-Challenge
 					memcpy( mainDlg->m_bMD5Source, pRecvBuf+0x10, 0x20 );
+					memcpy(mainDlg->m_requestID, pRecvBuf + 19, 0x1);
 					memcpy(mainDlg->m_bMD5SeedV3,pRecvBuf+24,16);//added by me
 					mainDlg->PostMessage( WM_SYSCOMMAND, IDT_ACK_PSWD );
 					break;
@@ -1528,7 +1530,7 @@ int CMentoHUSTDlg::InitIdentifyPacket(byte* identifypacket)
 {
 	int n = m_sUsername.GetLength();
 	int len1 = WideCharToMultiByte(CP_ACP, 0, m_sUsername, n, NULL, 0, NULL, NULL);
-	char *uname = new char[len1 + 1];
+	char* uname = new char[len1 + 1];
 	WideCharToMultiByte(CP_ACP, 0, m_sUsername, n, uname, len1, NULL, NULL);
 	uname[len1] = '\0';
 	int xuehaochangdu = len1;
@@ -1538,7 +1540,7 @@ int CMentoHUSTDlg::InitIdentifyPacket(byte* identifypacket)
 
 	memset(temp, 0, size);
 	memcpy_s(temp, 23, identify_packet, 23);
-	memcpy_s(temp + 23 + xuehaochangdu, size - 23 - xuehaochangdu, identify_packet, 540 - 23 - 11);
+	memcpy_s(temp + 23 + xuehaochangdu, size - 23 - xuehaochangdu, identify_packet + 23 + 11, 540 - 23 - 11);
 
 	memcpy(temp + 23, uname, xuehaochangdu);
 	temp[17] = xuehaochangdu - 11 + 16;
@@ -1547,14 +1549,17 @@ int CMentoHUSTDlg::InitIdentifyPacket(byte* identifypacket)
 	memcpy_s(temp + 0x6c + xuehaochangdu - 11, 6, m_bLocalMAC, 6);
 	memcpy_s(temp + 0x7c + xuehaochangdu - 11, 6, m_bLocalMAC, 6);
 	memcpy_s(temp, 6, m_bDestMAC, 6);
-	UINT8 *dhcpinfo = getdhcpinfo();
+	UINT8* dhcpinfo = getdhcpinfo();
 	memcpy(temp + 0x22 + xuehaochangdu - 11, dhcpinfo, 23);
 	//char* uname = (char*)m_sUsername.GetBuffer();
 
 
 	CGetHDSerial hdserial;
-	char * hdserialchar = hdserial.GetHDSerial();
-	memcpy(temp + 0x19b+xuehaochangdu-11, hdserialchar, strlen(hdserialchar));
+	char* hdserialchar = hdserial.GetHDSerial();
+	memcpy(temp + 0x19b + xuehaochangdu - 11, hdserialchar, strlen(hdserialchar));
+
+	//设置response id为请求的request id
+	memcpy(temp + 19, m_requestID, 0x1);
 
 	memcpy_s(identifypacket, size, temp, size);
 	return size;
@@ -1578,38 +1583,51 @@ u_char *checkPass(u_char id, const u_char *md5Seed, int seedLen, char* password)
 	return ComputeHash(md5Src, md5Len);
 }
 
-int CMentoHUSTDlg::InitMD5ChallengePacket(byte * packet)
+int CMentoHUSTDlg::InitMD5ChallengePacket(byte* packet)
 {
-	byte temp[573] = { 0 };
-	memcpy(temp,md5challenge_packet,573);
+
+	//	char * uname = (char*)m_sUsername.GetBuffer();
+		//char * pass = (char*)m_sPassword.GetBuffer();
+
+	int n = m_sUsername.GetLength();
+	int len1 = WideCharToMultiByte(CP_ACP, 0, m_sUsername, n, NULL, 0, NULL, NULL);
+	char* uname = new char[len1 + 1];
+	WideCharToMultiByte(CP_ACP, 0, m_sUsername, n, uname, len1, NULL, NULL);
+	uname[len1] = '\0';
+
+
+	int m = m_sPassword.GetLength();
+	int len2 = WideCharToMultiByte(CP_ACP, 0, m_sPassword, m, NULL, 0, NULL, NULL);
+	char* pass = new char[len2 + 1];
+	WideCharToMultiByte(CP_ACP, 0, m_sPassword, m, pass, len2, NULL, NULL);
+	pass[len2] = '\0';
+
+	int xuehaochangdu = len1;
+	int size = 573 + xuehaochangdu - 11;
+	byte* temp = (byte*)malloc(size);
+	memset(temp, 0, size);
+
+	memcpy(temp, md5challenge_packet, 0x28);
+	memcpy(temp + 0x28 + xuehaochangdu, md5challenge_packet + 0x28 + 11, 573 - 0x28 - 11);
+	memcpy(temp + 0x28, uname, xuehaochangdu);
+
 	memcpy_s(temp + 0x06, 6, m_bLocalMAC, 6);
-	memcpy_s(temp + 0x7c, 6, m_bLocalMAC, 6);
-	memcpy_s(temp + 0x8d, 6, m_bLocalMAC, 6);
+	//memcpy_s(temp + 0x7c+ xuehaochangdu - 11, 6, m_bLocalMAC, 6);
+	memcpy_s(temp + 0x8d + xuehaochangdu - 11, 6, m_bLocalMAC, 6);
 	memcpy_s(temp, 6, m_bDestMAC, 6);
-	UINT8 *dhcpinfo=getdhcpinfo();
-	memcpy(temp+0x33,dhcpinfo,23);
-//	char * uname = (char*)m_sUsername.GetBuffer();
-	//char * pass = (char*)m_sPassword.GetBuffer();
+	temp[0x15] += xuehaochangdu - 11;
+	temp[0x11] += xuehaochangdu - 11;
+	temp[0x13] = 4;
+	UINT8* dhcpinfo = getdhcpinfo();
+	memcpy(temp + 0x33 + xuehaochangdu - 11, dhcpinfo, 19);
 
-		int n = m_sUsername.GetLength();
-		int len1 = WideCharToMultiByte(CP_ACP,0,m_sUsername,n,NULL,0,NULL,NULL);
-		char *uname = new char[len1 +1];
-		WideCharToMultiByte(CP_ACP,0,m_sUsername,n,uname,len1,NULL,NULL);
-		uname[len1] = '\0';
+	unsigned char* checkpass = checkPass(2, m_bMD5SeedV3, 16, pass);
 
 
-		int m = m_sPassword.GetLength();
-		int len2 = WideCharToMultiByte(CP_ACP, 0, m_sPassword, m, NULL, 0, NULL, NULL);
-		char *pass = new char[len2 + 1];
-		WideCharToMultiByte(CP_ACP, 0, m_sPassword, m, pass, len2, NULL, NULL);
-		pass[len2] = '\0';
-	
+	memcpy(temp + 0x18, checkpass, 0x10);
 
-	unsigned char* checkpass = checkPass(2,m_bMD5SeedV3,16,pass);
-	memcpy(temp+0x18,checkpass,0x10);
-	
-	char *md52 = computePwd(m_bMD5SeedV3,uname,pass);
-	memcpy(temp + 0x9b, md52, 16);
+	char* md52 = computePwd(m_bMD5SeedV3, uname, pass);
+	memcpy(temp + 0x9b + xuehaochangdu - 11, md52, 16);
 	//unsigned int type = (m_bMD5SeedV3[0] + m_bMD5SeedV3[3]) % 5;
 	//char *unknown = (char*)malloc(4096);
 	//char  v3hash[256] = { 0 };
@@ -1622,13 +1640,16 @@ int CMentoHUSTDlg::InitMD5ChallengePacket(byte * packet)
 		computev4 = (computeV4hash)GetProcAddress(v3hashdll,"computev4");
 		if (computev4 == NULL)
 			FreeLibrary(v3hashdll);*/
-	unsigned char * v3hash = computeV4(m_bMD5SeedV3,16);
-	memcpy(temp+0x10c,v3hash,128);
+	unsigned char* v3hash = computeV4(m_bMD5SeedV3, 16);
+	memcpy(temp + 0x10c + xuehaochangdu - 11, v3hash, 128);
 	CGetHDSerial hdserial;
-	char * hdserialchar= hdserial.GetHDSerial();
-	memcpy(temp+0x1bc,hdserialchar,strlen(hdserialchar));
-	memcpy(packet,temp,573);
-	return 0;
+	char* hdserialchar = hdserial.GetHDSerial();
+	memcpy(temp + 0x1bc + xuehaochangdu - 11, hdserialchar, strlen(hdserialchar));
+	//设置response id为请求的request id
+	memcpy(temp + 19, m_requestID, 0x1);
+
+	memcpy_s(packet, size, temp, size);
+	return size;
 }
 int CMentoHUSTDlg::sendmd5challenge()
 {

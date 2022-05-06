@@ -106,6 +106,7 @@ public:
 	BYTE	m_bDestMAC[6];		//服务器MAC
 	BYTE	m_bMD5Source[0x20];	//MD5种子
 	BYTE    m_bMD5SeedV3[16];	//MD5种子v3
+	BYTE    m_requestID[1];        //服务器请求ID
 	BYTE	m_bEchoSource[4];	//Echo时的种子
 	CString	m_sServerMsg;		//服务器消息
 	CString m_sShowMsg;			//待显示消息
