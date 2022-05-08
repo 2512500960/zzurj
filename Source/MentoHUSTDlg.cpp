@@ -555,11 +555,11 @@ BOOL CMentoHUSTDlg::OpenAdapter()
 
 	char filter[512];
 	sprintf(filter,"ether dst %02X",m_bLocalMAC[0]);
-	char tempchar;
+	char tempstr[4];
 	for (int ii = 1; ii < 6; ii++)
 	{
-		sprintf(&tempchar,":%02x",m_bLocalMAC[ii]);
-		strcat(filter,&tempchar);
+		sprintf(tempstr,":%02X",m_bLocalMAC[ii]);
+		strcat(filter,tempstr);
 	}
 	pcap_compile(m_pAdapter,&m_bfilter,filter,1,0xffffff00);
 	pcap_setfilter(m_pAdapter,&m_bfilter);
@@ -1533,6 +1533,9 @@ int CMentoHUSTDlg::InitIdentifyPacket(byte* identifypacket)
 	char* uname = new char[len1 + 1];
 	WideCharToMultiByte(CP_ACP, 0, m_sUsername, n, uname, len1, NULL, NULL);
 	uname[len1] = '\0';
+
+	CString msg = _T("username length") + len1;
+	Output(msg, IDC_SC_STATE);
 	int xuehaochangdu = len1;
 	//identify_packet是学号11位的时候抓的包，所以如果学号长度要是多于11位的话，需要往后移动一下
 	int size = 540 + xuehaochangdu - 11;
@@ -1590,17 +1593,26 @@ int CMentoHUSTDlg::InitMD5ChallengePacket(byte* packet)
 		//char * pass = (char*)m_sPassword.GetBuffer();
 
 	int n = m_sUsername.GetLength();
-	int len1 = WideCharToMultiByte(CP_ACP, 0, m_sUsername, n, NULL, 0, NULL, NULL);
+	CString msg;
+    int len1 = WideCharToMultiByte(CP_ACP, 0, m_sUsername, n, NULL, 0, NULL, NULL);
 	char* uname = new char[len1 + 1];
 	WideCharToMultiByte(CP_ACP, 0, m_sUsername, n, uname, len1, NULL, NULL);
 	uname[len1] = '\0';
-
+	msg.Format(_T("uname length %d"), len1);
+	Output(msg, IDC_SC_STATE);
+	msg.Format(_T("uname %s"), CString(uname));
+	Output(msg, IDC_SC_STATE);
 
 	int m = m_sPassword.GetLength();
 	int len2 = WideCharToMultiByte(CP_ACP, 0, m_sPassword, m, NULL, 0, NULL, NULL);
 	char* pass = new char[len2 + 1];
 	WideCharToMultiByte(CP_ACP, 0, m_sPassword, m, pass, len2, NULL, NULL);
 	pass[len2] = '\0';
+	
+	msg.Format(_T("password length: %d"), len2);
+	Output(msg, IDC_SC_STATE);
+	msg.Format(_T("password : %s"), CString(pass));
+	Output(msg, IDC_SC_STATE);
 
 	int xuehaochangdu = len1;
 	int size = 573 + xuehaochangdu - 11;
@@ -1612,16 +1624,16 @@ int CMentoHUSTDlg::InitMD5ChallengePacket(byte* packet)
 	memcpy(temp + 0x28, uname, xuehaochangdu);
 
 	memcpy_s(temp + 0x06, 6, m_bLocalMAC, 6);
-	//memcpy_s(temp + 0x7c+ xuehaochangdu - 11, 6, m_bLocalMAC, 6);
+	memcpy_s(temp + 0x7c+ xuehaochangdu - 11, 6, m_bLocalMAC, 6);
 	memcpy_s(temp + 0x8d + xuehaochangdu - 11, 6, m_bLocalMAC, 6);
 	memcpy_s(temp, 6, m_bDestMAC, 6);
 	temp[0x15] += xuehaochangdu - 11;
 	temp[0x11] += xuehaochangdu - 11;
-	temp[0x13] = 4;
+	//temp[0x13] = 4;
 	UINT8* dhcpinfo = getdhcpinfo();
-	memcpy(temp + 0x33 + xuehaochangdu - 11, dhcpinfo, 19);
+	memcpy(temp + 0x33 + xuehaochangdu - 11, dhcpinfo, 23);
 
-	unsigned char* checkpass = checkPass(2, m_bMD5SeedV3, 16, pass);
+	unsigned char* checkpass = checkPass(m_requestID[0], m_bMD5SeedV3, 16, pass);
 
 
 	memcpy(temp + 0x18, checkpass, 0x10);
@@ -1644,7 +1656,12 @@ int CMentoHUSTDlg::InitMD5ChallengePacket(byte* packet)
 	memcpy(temp + 0x10c + xuehaochangdu - 11, v3hash, 128);
 	CGetHDSerial hdserial;
 	char* hdserialchar = hdserial.GetHDSerial();
-	memcpy(temp + 0x1bc + xuehaochangdu - 11, hdserialchar, strlen(hdserialchar));
+	//memcpy(temp + 0x1bc + xuehaochangdu - 11, hdserialchar, strlen(hdserialchar));
+	byte* fakehdserial = (byte*)malloc(10);
+	for (int i = 0; i < 10; i++) {
+		fakehdserial[i] = 'a'+((unsigned int)md52[i])%10;
+	}
+	memcpy(temp + 0x1bc + xuehaochangdu - 11, fakehdserial, 10);
 	//设置response id为请求的request id
 	memcpy(temp + 19, m_requestID, 0x1);
 
@@ -1653,16 +1670,16 @@ int CMentoHUSTDlg::InitMD5ChallengePacket(byte* packet)
 }
 int CMentoHUSTDlg::sendmd5challenge()
 {
-	byte packet[573];
-	InitMD5ChallengePacket(packet);
-	return pcap_sendpacket(m_pAdapter, packet, 573);
+	byte packet[1000];
+	int size=InitMD5ChallengePacket(packet);
+	return pcap_sendpacket(m_pAdapter, packet, size);
 }
 extern UCHAR* ComputeHash1(UCHAR* src, UINT4 len);
 char * CMentoHUSTDlg::computePwd(const unsigned char *md5, const char* username, const char* password)
 {
 	static char buf[20];
 
-	unsigned char tmp[40];
+	unsigned char tmp[60];
 	int tmp_len = 0;
 	tmp_len = strlen(username);
 	strcpy((char*)tmp, username);
