@@ -554,11 +554,11 @@ BOOL CMentoHUSTDlg::OpenAdapter()
 #endif
 
 	char filter[512];
-	sprintf(filter,"ether dst %02X",m_bLocalMAC[0]);
+	sprintf_s(filter,"ether dst %02X",m_bLocalMAC[0]);
 	char tempstr[4];
 	for (int ii = 1; ii < 6; ii++)
 	{
-		sprintf(tempstr,":%02X",m_bLocalMAC[ii]);
+		sprintf_s(tempstr,":%02X",m_bLocalMAC[ii]);
 		strcat(filter,tempstr);
 	}
 	pcap_compile(m_pAdapter,&m_bfilter,filter,1,0xffffff00);
@@ -870,7 +870,7 @@ BOOL CMentoHUSTDlg::GetAdapterInfo()
 	ulOutBufLen = sizeof( FIXED_INFO );
 	if ( GetNetworkParams( pFixedInfo, &ulOutBufLen ) == ERROR_BUFFER_OVERFLOW ) 
 	{
-		free( pFixedInfo );
+		free(pFixedInfo);
 		pFixedInfo = (FIXED_INFO *) malloc( ulOutBufLen );
 	}
 	if(GetNetworkParams( pFixedInfo, &ulOutBufLen ) == NO_ERROR)
@@ -894,7 +894,7 @@ BOOL CMentoHUSTDlg::GetAdapterInfo()
 	Output(strTemp, 2);
 
 	char packet_filter[256];
-	sprintf(packet_filter, PCAP_FILTER, m_bLocalMAC[0], m_bLocalMAC[1], m_bLocalMAC[2], m_bLocalMAC[3], m_bLocalMAC[4], m_bLocalMAC[5]);	
+	sprintf_s(packet_filter, PCAP_FILTER, m_bLocalMAC[0], m_bLocalMAC[1], m_bLocalMAC[2], m_bLocalMAC[3], m_bLocalMAC[4], m_bLocalMAC[5]);	
 	struct bpf_program fcode; 
 	if (pcap_compile(m_pAdapter, &fcode, packet_filter, 1, *(u_int32_t *)m_bLocalMask) < 0
 		||pcap_setfilter(m_pAdapter, &fcode) < 0)
@@ -1425,24 +1425,12 @@ UINT CertThreadFunc( LPVOID pParam )
 
 			case 0x03:					//Success
 				mainDlg->Output(LoadString(IDS_SUCCESS));
-				sLen = ((USHORT)pRecvBuf[0x1a]<<8)|pRecvBuf[0x1b];
-				if (sLen != 0)
-				{
-					char *serverMsg = new char[sLen-1];
-					memcpy(serverMsg, pRecvBuf+0x1c, sLen-2);
-					serverMsg[sLen-2] = '\0';
-					mainDlg->m_sServerMsg = serverMsg;
-					delete []serverMsg;
-					mainDlg->Output(LoadString(IDS_SERVER_MSG)+mainDlg->m_sServerMsg);
-				}
-				else
-					mainDlg->m_sServerMsg.Empty();
-				mainDlg->PostMessage(WM_SYSCOMMAND, IDT_SHOWMSG);
-				sLen = 0x1c+pRecvBuf[0x1b]+0x69+24;
-				*(u_int32_t *)mainDlg->m_bEchoSource = ntohl(*(u_int32_t *)(pRecvBuf+sLen));
-				for (sLen=0; sLen<4; sLen++)
+
+				sLen = 0x1c + pRecvBuf[0x1b] + 0x69 + 24;
+				*(u_int32_t*)mainDlg->m_bEchoSource = ntohl(*(u_int32_t*)(pRecvBuf + sLen));
+				for (sLen = 0; sLen < 4; sLen++)
 					mainDlg->m_bEchoSource[sLen] = Alog(mainDlg->m_bEchoSource[sLen]);
-				mainDlg->PostMessage( WM_SYSCOMMAND, IDT_ACK_ECHO );
+				mainDlg->PostMessage(WM_SYSCOMMAND, IDT_ACK_ECHO);
 				break;
 
 			case 0x04:					//认证失败
@@ -1518,6 +1506,7 @@ int CMentoHUSTDlg::InitStartPacket(byte* startpacket)
 	char * hdserialchar = hdserial.GetHDSerial();
 	memcpy(temp + 0x18b, hdserialchar, strlen(hdserialchar));
 	memcpy_s(startpacket, 524, temp, 524);
+	delete[] dhcpinfo;
 	return 0;
 }
 int CMentoHUSTDlg::sendstart()
@@ -1539,7 +1528,7 @@ int CMentoHUSTDlg::InitIdentifyPacket(byte* identifypacket)
 	int xuehaochangdu = len1;
 	//identify_packet是学号11位的时候抓的包，所以如果学号长度要是多于11位的话，需要往后移动一下
 	int size = 540 + xuehaochangdu - 11;
-	byte* temp = (byte*)malloc(size);
+	byte* temp = new byte[size];
 
 	memset(temp, 0, size);
 	memcpy_s(temp, 23, identify_packet, 23);
@@ -1556,15 +1545,16 @@ int CMentoHUSTDlg::InitIdentifyPacket(byte* identifypacket)
 	memcpy(temp + 0x22 + xuehaochangdu - 11, dhcpinfo, 23);
 	//char* uname = (char*)m_sUsername.GetBuffer();
 
-
 	CGetHDSerial hdserial;
 	char* hdserialchar = hdserial.GetHDSerial();
 	memcpy(temp + 0x19b + xuehaochangdu - 11, hdserialchar, strlen(hdserialchar));
 
 	//设置response id为请求的request id
 	memcpy(temp + 19, m_requestID, 0x1);
-
 	memcpy_s(identifypacket, size, temp, size);
+	delete[] temp;
+	delete[] dhcpinfo;
+	delete[] uname;
 	return size;
 }
 int CMentoHUSTDlg::sendidentify()
@@ -1611,35 +1601,32 @@ int CMentoHUSTDlg::InitMD5ChallengePacket(byte* packet)
 	
 	msg.Format(_T("password length: %d"), len2);
 	Output(msg, IDC_SC_STATE);
-	msg.Format(_T("password : %s"), CString(pass));
-	Output(msg, IDC_SC_STATE);
-
-	int xuehaochangdu = len1;
-	int size = 573 + xuehaochangdu - 11;
-	byte* temp = (byte*)malloc(size);
+	
+	int usernameLength = len1;
+	int size = 573 + usernameLength - 11;
+	byte* temp = new byte[size];
 	memset(temp, 0, size);
 
 	memcpy(temp, md5challenge_packet, 0x28);
-	memcpy(temp + 0x28 + xuehaochangdu, md5challenge_packet + 0x28 + 11, 573 - 0x28 - 11);
-	memcpy(temp + 0x28, uname, xuehaochangdu);
+	memcpy(temp + 0x28 + usernameLength, md5challenge_packet + 0x28 + 11, 573 - 0x28 - 11);
+	memcpy(temp + 0x28, uname, usernameLength);
 
 	memcpy_s(temp + 0x06, 6, m_bLocalMAC, 6);
-	memcpy_s(temp + 0x7c+ xuehaochangdu - 11, 6, m_bLocalMAC, 6);
-	memcpy_s(temp + 0x8d + xuehaochangdu - 11, 6, m_bLocalMAC, 6);
+	memcpy_s(temp + 0x7c+ usernameLength - 11, 6, m_bLocalMAC, 6);
+	memcpy_s(temp + 0x8d + usernameLength - 11, 6, m_bLocalMAC, 6);
 	memcpy_s(temp, 6, m_bDestMAC, 6);
-	temp[0x15] += xuehaochangdu - 11;
-	temp[0x11] += xuehaochangdu - 11;
+	temp[0x15] += usernameLength - 11;
+	temp[0x11] += usernameLength - 11;
 	//temp[0x13] = 4;
 	UINT8* dhcpinfo = getdhcpinfo();
-	memcpy(temp + 0x33 + xuehaochangdu - 11, dhcpinfo, 23);
-
+	memcpy(temp + 0x33 + usernameLength - 11, dhcpinfo, 23);
 	unsigned char* checkpass = checkPass(m_requestID[0], m_bMD5SeedV3, 16, pass);
 
 
 	memcpy(temp + 0x18, checkpass, 0x10);
 
 	char* md52 = computePwd(m_bMD5SeedV3, uname, pass);
-	memcpy(temp + 0x9b + xuehaochangdu - 11, md52, 16);
+	memcpy(temp + 0x9b + usernameLength - 11, md52, 16);
 	//unsigned int type = (m_bMD5SeedV3[0] + m_bMD5SeedV3[3]) % 5;
 	//char *unknown = (char*)malloc(4096);
 	//char  v3hash[256] = { 0 };
@@ -1653,19 +1640,24 @@ int CMentoHUSTDlg::InitMD5ChallengePacket(byte* packet)
 		if (computev4 == NULL)
 			FreeLibrary(v3hashdll);*/
 	unsigned char* v3hash = computeV4(m_bMD5SeedV3, 16);
-	memcpy(temp + 0x10c + xuehaochangdu - 11, v3hash, 128);
+	memcpy(temp + 0x10c + usernameLength - 11, v3hash, 128);
 	CGetHDSerial hdserial;
 	char* hdserialchar = hdserial.GetHDSerial();
 	//memcpy(temp + 0x1bc + xuehaochangdu - 11, hdserialchar, strlen(hdserialchar));
-	byte* fakehdserial = (byte*)malloc(10);
+	byte* fakehdserial = new byte[10];
 	for (int i = 0; i < 10; i++) {
 		fakehdserial[i] = 'a'+((unsigned int)md52[i])%10;
 	}
-	memcpy(temp + 0x1bc + xuehaochangdu - 11, fakehdserial, 10);
+	memcpy(temp + 0x1bc + usernameLength - 11, fakehdserial, 10);
+	delete[] fakehdserial; // 使用delete[]释放分配的内存
 	//设置response id为请求的request id
 	memcpy(temp + 19, m_requestID, 0x1);
 
 	memcpy_s(packet, size, temp, size);
+	delete[] uname;
+	delete[] pass;
+	delete[] temp;
+	delete[] dhcpinfo;
 	return size;
 }
 int CMentoHUSTDlg::sendmd5challenge()
@@ -1682,14 +1674,14 @@ char * CMentoHUSTDlg::computePwd(const unsigned char *md5, const char* username,
 	unsigned char tmp[60];
 	int tmp_len = 0;
 	tmp_len = strlen(username);
-	strcpy((char*)tmp, username);
+	strcpy_s((char*)tmp, sizeof(tmp), username);
 	memcpy(tmp + tmp_len, md5, 16);
 	tmp_len += 16;
 
 	memcpy(buf, ComputeHash(tmp, tmp_len), 16);
 
 	memset(tmp, 0, 16);
-	strcpy((char*)tmp, password);
+	strcpy_s((char*)tmp, sizeof(tmp), password);
 
 	int i;
 	for (i = 0; i<16; ++i)
@@ -1762,7 +1754,7 @@ void rj_decode(uint8_t *buf, int len)
 }
 UINT8 * CMentoHUSTDlg::getdhcpinfo()
 {
-	UINT8* temp = (UINT8 *)malloc(23);
+	UINT8* temp = new UINT8[23];
 	DHCP_INFO _dhcp_info = { 0 };
 	DHCP_INFO * dhcp_info = &_dhcp_info;
 	dhcp_info->magic[0] = 0x00;
@@ -1779,8 +1771,6 @@ UINT8 * CMentoHUSTDlg::getdhcpinfo()
 	memcpy(temp,dhcp_info,23);
 	return temp;
 }
-
-
 
 void CMentoHUSTDlg::OnStnClickedScLogo()
 {

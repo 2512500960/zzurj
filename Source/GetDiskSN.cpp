@@ -137,7 +137,7 @@ char* CGetHDSerial::GetHDSerial()
 		// Windows 9x/ME下读取硬盘序列号
 		WORD m_wWin9xHDSerial[256];
 		Win9xReadHDSerial(m_wWin9xHDSerial);
-		strcpy(m_buffer, WORDToChar(m_wWin9xHDSerial, 10, 19));
+		strcpy_s(m_buffer, sizeof(m_buffer), WORDToChar(m_wWin9xHDSerial, 10, 19));
 	}
 	else
 	{
@@ -146,7 +146,7 @@ char* CGetHDSerial::GetHDSerial()
 		// 判断是否有SCSI硬盘
 		if (!WinNTReadIDEHDSerial(m_wWinNTHDSerial))
 			WinNTReadSCSIHDSerial(m_wWinNTHDSerial);
-		strcpy(m_buffer, DWORDToChar(m_wWinNTHDSerial, 10, 19));
+		strcpy_s(m_buffer, sizeof(m_buffer), DWORDToChar(m_wWinNTHDSerial, 10, 19));
 	}
 	return m_buffer;
 }
@@ -257,7 +257,7 @@ BOOL CGetHDSerial::WinNTReadIDEHDSerial(DWORD * buffer)
 	char driveName[256];
 	HANDLE hPhysicalDriveIOCTL = 0;
 
-	sprintf(driveName, "\\\\.\\PhysicalDrive%d", drive);
+	sprintf_s(driveName, "\\\\.\\PhysicalDrive%d", drive);
 	//  Windows NT/2000/XP下创建文件需要管理员权限
 	hPhysicalDriveIOCTL = CreateFileA(driveName,
 		GENERIC_READ | GENERIC_WRITE,
@@ -318,7 +318,7 @@ BOOL CGetHDSerial::WinNTReadSCSIHDSerial(DWORD * buffer)
 	int controller = 0;
 	HANDLE hScsiDriveIOCTL = 0;
 	char   driveName[256];
-	sprintf(driveName, "\\\\.\\Scsi%d:", controller);
+	sprintf_s(driveName, "\\\\.\\Scsi%d:", controller);
 	//  Windows NT/2000/XP下任何权限都可以进行
 	hScsiDriveIOCTL = CreateFileA(driveName,
 		GENERIC_READ | GENERIC_WRITE,
@@ -333,15 +333,14 @@ BOOL CGetHDSerial::WinNTReadSCSIHDSerial(DWORD * buffer)
 		{
 			char buffer[sizeof(SRB_IO_CONTROL) + SENDIDLENGTH];
 			SRB_IO_CONTROL *p = (SRB_IO_CONTROL *)buffer;
-			SENDCMDINPARAMS *pin =
-				(SENDCMDINPARAMS *)(buffer + sizeof(SRB_IO_CONTROL));
+			SENDCMDINPARAMS *pin = (SENDCMDINPARAMS *)(buffer + sizeof(SRB_IO_CONTROL));
 			// 准备参数
 			memset(buffer, 0, sizeof(buffer));
 			p->HeaderLength = sizeof(SRB_IO_CONTROL);
 			p->Timeout = 10000;
 			p->Length = SENDIDLENGTH;
 			p->ControlCode = IOCTL_SCSI_MINIPORT_IDENTIFY;
-			strncpy((char *)p->Signature, "SCSIDISK", 8);
+			strncpy_s((char*)p->Signature, sizeof(p->Signature), "SCSIDISK", 8);
 			pin->irDriveRegs.bCommandReg = IDE_ATA_IDENTIFY;
 			pin->bDriveNumber = drive;
 			// 得到SCSI硬盘信息
